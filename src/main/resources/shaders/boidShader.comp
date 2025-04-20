@@ -1,0 +1,135 @@
+﻿#version 430
+
+layout(local_size_x = 256) in;
+
+struct Boid {
+    vec4 position;
+    vec4 velocity;
+    float angle;
+};
+
+layout(std430, binding = 0) buffer boidBuffer {
+    Boid boids[];
+};
+
+
+uniform float deltaTime;
+uniform bool moveTowardsMouse;
+uniform bool moveAwayFromMouse;
+uniform vec2 mousePosition;
+
+uniform float maxSpeed = 0.5;
+uniform float dragForce = 0.01;
+uniform float alignmentForce = 0.011;
+uniform float cohesionForce = 0.01;
+uniform float separationForce = 0.011;
+uniform float boidVision = 0.1;
+uniform float dragRadius = 0.5;
+
+uniform float simulationWindowHeight = 0.67;
+
+
+float calculateAngle(vec2 a, vec2 b) {
+    return atan(b.y, b.x) - atan(a.y, a.x);
+}
+
+void main(){
+    uint id = gl_GlobalInvocationID.x;//get id of the current boid
+
+//    // Boid parameters
+//    float  maxSpeed = 0.55;
+//    float dragForce = 0.01;
+//    float  alignmentForce = 0.011;
+//    float cohesionForce = 0.01;
+//    float separationForce = 0.011;
+//
+//    float boidVision = 0.1;//how far the boid can see
+//    float dragRadius = 0.5;//how far the boid can see the mouse
+
+    vec2 alignment = vec2(0.0);
+    vec2 cohesion = vec2(0.0);
+    vec2 separation = vec2(0.0);
+
+
+    // Check if the id is valid
+    if (id >= boids.length()) return;
+
+    // Boid logic
+    vec2 totalPosition = vec2(0.0);
+    vec2 totalVelocity = vec2(0.0);
+    int count = 0;
+//x > 0.2 && y > 0.33 = ~
+    if ((mousePosition.x <= 0.1 || mousePosition.y <= (1 - simulationWindowHeight)) && distance(mousePosition, boids[id].position.xy) < dragRadius){
+        if (moveTowardsMouse ) {//if the boid is close to the mouse move towards it
+            vec2 direction = normalize(mousePosition - boids[id].position.xy);
+            boids[id].velocity.xy += direction * dragForce;
+        }else if (moveAwayFromMouse) {//if the boid is close to the mouse move away from it
+            vec2 direction = normalize(mousePosition - boids[id].position.xy);
+            boids[id].velocity.xy -= direction * dragForce;
+        }
+    }
+
+    for (uint i = 0; i < boids.length(); i++) {//loop through all the boids to calculate the alignment, cohesion and separation
+        if (i == id) continue;
+        float distance = distance(boids[id].position.xy, boids[i].position.xy);
+        if (distance < boidVision) {
+            totalVelocity += boids[i].velocity.xy;
+            totalPosition += boids[i].position.xy;
+            count++;
+        }
+        if (distance < boidVision) {
+            separation -= boids[i].position.xy - boids[id].position.xy;
+        }
+    }
+
+    //calculate the alignment, cohesion and separation
+    if (count > 0) {
+        alignment = totalVelocity / float(count);
+        alignment = normalize(alignment) * maxSpeed;
+        alignment -= boids[id].velocity.xy;
+        alignment = normalize(alignment) * alignmentForce;
+
+
+        cohesion = totalPosition / float(count) - boids[id].position.xy;
+        cohesion = normalize(cohesion) * maxSpeed;
+        cohesion -= boids[id].velocity.xy;
+        cohesion = normalize(cohesion) * cohesionForce;
+    }
+
+    if (length(separation) > 0.0) {
+        separation = normalize(separation) * maxSpeed;
+        separation -= boids[id].velocity.xy;
+        separation = normalize(separation) * separationForce;
+    }
+
+    // Update boid velocity
+    boids[id].velocity.xy += alignment + cohesion + separation;
+
+    if (length(boids[id].velocity.xy) > maxSpeed) {
+        boids[id].velocity.xy = normalize(boids[id].velocity.xy) * maxSpeed;
+    }
+
+    // Update boid position and angle
+    boids[id].position += vec4(boids[id].velocity.xy * deltaTime, 0.0, 1.0);
+    boids[id].angle = -calculateAngle(vec2(0.0, 1.0), boids[id].velocity.xy);
+
+    // Wrap around screen boundaries
+    if (boids[id].position.x > 1.0) {
+        boids[id].position.x = -1.0;
+    } else if (boids[id].position.x < -1.0) {
+        boids[id].position.x = 1.0;
+    }
+
+    if (boids[id].position.y > 1.0) {
+        boids[id].position.y = -1.0;
+    } else if (boids[id].position.y < -1.0) {
+        boids[id].position.y = 1.0;
+    }
+
+    if (boids[id].position.z > 1.0) {
+        boids[id].position.z = -1.0;
+    } else if (boids[id].position.z < -1.0) {
+        boids[id].position.z = 1.0;
+    }
+}
+
