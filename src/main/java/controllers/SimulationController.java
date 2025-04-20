@@ -19,6 +19,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Random;
 
 
@@ -60,11 +61,15 @@ public class SimulationController {
         }
     }
 
-    private int compileShader(GL4 gl, String filePath, int shaderType) {
+    private int compileShader(GL4 gl, String resourcePath, int shaderType) {
         int shaderId = gl.glCreateShader(shaderType);
 
         try {
-            String shaderSource = new String(Files.readAllBytes(Paths.get(filePath)));
+            String shaderSource = new String(
+                    Objects.requireNonNull(SimulationController.class.getClassLoader()
+                                    .getResourceAsStream("shaders/" + resourcePath))
+                            .readAllBytes()
+            );
             gl.glShaderSource(shaderId, 1, new String[]{shaderSource}, null);
             gl.glCompileShader(shaderId);
 
@@ -88,7 +93,7 @@ public class SimulationController {
 
             return shaderId;
         } catch (IOException e) {
-            System.err.println("Failed to read shader file: " + filePath);
+            System.err.println("Failed to read shader file: " + resourcePath);
             gl.glDeleteShader(shaderId);
             return 0;
         }
@@ -129,15 +134,9 @@ public class SimulationController {
             Vector4f position = boid.getPosition();
             Vector4f velocity = boid.getVelocity();
             // Position (vec4)
-            boidData.put(position.x);
-            boidData.put(position.y);
-            boidData.put(position.z);
-            boidData.put(position.w);
+            boidData.put(new float[] {position.x, position.y, position.z, position.w});
             // Velocity (vec4)
-            boidData.put(velocity.x);
-            boidData.put(velocity.y);
-            boidData.put(velocity.z);
-            boidData.put(velocity.w);
+            boidData.put(new float[] {velocity.x, velocity.y, velocity.z, velocity.x});
             // Angle (float)
             boidData.put(boid.getAngle());
         }
@@ -152,9 +151,9 @@ public class SimulationController {
         gl.glEnable(GL4.GL_DEBUG_OUTPUT);
         gl.glEnable(GL4.GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-        int computeShader = compileShader(gl, "C:/Users/Eugene/Desktop/wat/sem6/EdP/Boids_Simulation/src/main/resources/shaders/boidShader.comp", GL4.GL_COMPUTE_SHADER);
-        int vertexShader = compileShader(gl, "C:/Users/Eugene/Desktop/wat/sem6/EdP/Boids_Simulation/src/main/resources/shaders/boidShader.vert", GL4.GL_VERTEX_SHADER);
-        int fragmentShader = compileShader(gl, "C:/Users/Eugene/Desktop/wat/sem6/EdP/Boids_Simulation/src/main/resources/shaders/boidShader.frag", GL4.GL_FRAGMENT_SHADER);
+        int computeShader = compileShader(gl, "boidShader.comp", GL4.GL_COMPUTE_SHADER);
+        int vertexShader = compileShader(gl, "boidShader.vert", GL4.GL_VERTEX_SHADER);
+        int fragmentShader = compileShader(gl, "boidShader.frag", GL4.GL_FRAGMENT_SHADER);
 
 // create compute shader program
         int computeProgram = gl.glCreateProgram();

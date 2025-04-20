@@ -27,6 +27,8 @@ dependencies {
 
     // Add JOML dependency
     implementation("org.joml:joml:1.10.5")
+
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
 }
 
 tasks.test {
