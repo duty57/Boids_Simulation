@@ -58,15 +58,13 @@ void main(){
     vec2 totalPosition = vec2(0.0);
     vec2 totalVelocity = vec2(0.0);
     int count = 0;
-//x > 0.2 && y > 0.33 = ~
-    if ((mousePosition.x <= 0.1 || mousePosition.y <= (1 - simulationWindowHeight)) && distance(mousePosition, boids[id].position.xy) < dragRadius){
-        if (moveTowardsMouse ) {//if the boid is close to the mouse move towards it
-            vec2 direction = normalize(mousePosition - boids[id].position.xy);
-            boids[id].velocity.xy += direction * dragForce;
-        }else if (moveAwayFromMouse) {//if the boid is close to the mouse move away from it
-            vec2 direction = normalize(mousePosition - boids[id].position.xy);
-            boids[id].velocity.xy -= direction * dragForce;
-        }
+
+    if (moveTowardsMouse ) {//if the boid is close to the mouse move towards it
+        vec2 direction = normalize(mousePosition - boids[id].position.xy);
+        boids[id].velocity.xy += direction * dragForce;
+    }else if (moveAwayFromMouse) {//if the boid is close to the mouse move away from it
+        vec2 direction = normalize(mousePosition - boids[id].position.xy);
+        boids[id].velocity.xy -= direction * dragForce;
     }
 
     for (uint i = 0; i < boids.length(); i++) {//loop through all the boids to calculate the alignment, cohesion and separation
