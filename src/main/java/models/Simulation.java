@@ -53,6 +53,11 @@ public class Simulation {
             separationForce = Float.parseFloat(prop.getProperty("boids.separationForce"));
             vision = Float.parseFloat(prop.getProperty("boids.vision"));
             dragRadius = Float.parseFloat(prop.getProperty("boids.dragRadius"));
+            temperature = Float.parseFloat(prop.getProperty("boids.temperature"));
+            windSpeed = Float.parseFloat(prop.getProperty("boids.windSpeed"));
+            windDirection = Float.parseFloat(prop.getProperty("boids.windDirection"));
+            cloudiness = Float.parseFloat(prop.getProperty("boids.cloudiness"));
+            sunAngle = Float.parseFloat(prop.getProperty("boids.sunAngle"));
             boids = new Boid[NUMBER_OF_BOIDS];
         }catch (Exception e){
             System.out.println("Error loading shader program");

@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
@@ -35,11 +37,17 @@ public class SimulationController {
     public SimulationController(MainFrame mainFrame, Simulation simulation) {
         this.mainFrame = mainFrame;
         this.simulation = simulation;
-
+        this.mainFrame.setSimulation(simulation);
     }
 
     public void init() {
 
+        try{
+            System.out.println(InetAddress.getLocalHost().getHostName());
+            System.out.println(System.getProperty("user.name"));
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
         GLProfile profile = GLProfile.get(GLProfile.GL4);
         GLCapabilities capabilities = new GLCapabilities(profile);
         capabilities.setHardwareAccelerated(true);
