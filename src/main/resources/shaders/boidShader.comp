@@ -12,22 +12,18 @@ layout(std430, binding = 0) buffer boidBuffer {
     Boid boids[];
 };
 
-
 uniform float deltaTime;
 uniform bool moveTowardsMouse;
 uniform bool moveAwayFromMouse;
 uniform vec2 mousePosition;
 
-uniform float maxSpeed = 0.5;
-uniform float dragForce = 0.01;
-uniform float alignmentForce = 0.011;
-uniform float cohesionForce = 0.01;
-uniform float separationForce = 0.011;
-uniform float boidVision = 0.1;
-uniform float dragRadius = 0.5;
-
-uniform float simulationWindowHeight = 0.67;
-
+uniform float maxSpeed;
+uniform float dragForce;
+uniform float alignmentForce;
+uniform float cohesionForce;
+uniform float separationForce;
+uniform float boidVision;
+uniform float dragRadius;
 
 float calculateAngle(vec2 a, vec2 b) {
     return atan(b.y, b.x) - atan(a.y, a.x);
@@ -35,16 +31,6 @@ float calculateAngle(vec2 a, vec2 b) {
 
 void main(){
     uint id = gl_GlobalInvocationID.x;//get id of the current boid
-
-//    // Boid parameters
-//    float  maxSpeed = 0.55;
-//    float dragForce = 0.01;
-//    float  alignmentForce = 0.011;
-//    float cohesionForce = 0.01;
-//    float separationForce = 0.011;
-//
-//    float boidVision = 0.1;//how far the boid can see
-//    float dragRadius = 0.5;//how far the boid can see the mouse
 
     vec2 alignment = vec2(0.0);
     vec2 cohesion = vec2(0.0);
@@ -59,13 +45,17 @@ void main(){
     vec2 totalVelocity = vec2(0.0);
     int count = 0;
 
-    if (moveTowardsMouse ) {//if the boid is close to the mouse move towards it
-        vec2 direction = normalize(mousePosition - boids[id].position.xy);
-        boids[id].velocity.xy += direction * dragForce;
-    }else if (moveAwayFromMouse) {//if the boid is close to the mouse move away from it
-        vec2 direction = normalize(mousePosition - boids[id].position.xy);
-        boids[id].velocity.xy -= direction * dragForce;
+    if (distance(mousePosition, boids[id].position.xy) < dragRadius) {
+        if (moveTowardsMouse) {//if the boid is close to the mouse move towards it
+            vec2 direction = normalize(mousePosition - boids[id].position.xy);
+            boids[id].velocity.xy += direction * dragForce;
+        }else if (moveAwayFromMouse) {//if the boid is close to the mouse move away from it
+            vec2 direction = normalize(mousePosition - boids[id].position.xy);
+            boids[id].velocity.xy -= direction * dragForce;
+        }
     }
+
+
 
     for (uint i = 0; i < boids.length(); i++) {//loop through all the boids to calculate the alignment, cohesion and separation
         if (i == id) continue;

@@ -18,16 +18,16 @@ public class Simulation {
     private int[] ssbo = new int[1];
     private int vao;
 
-    private int NUMBER_OF_BOIDS = 1024;
-    private float maxSpeed = 0.5f;
-    private float dragForce = 0.01f;
-    private float alignmentForce = 0.011f;
-    private float cohesionForce = 0.01f;
-    private float separationForce = 0.011f;
-    private float vision = 0.01f;
-    private float dragRadius = 0.05f;
+    private int NUMBER_OF_BOIDS;
+    private float maxSpeed;
+    private float dragForce;
+    private float alignmentForce;
+    private float cohesionForce;
+    private float separationForce;
+    private float vision;
+    private float dragRadius;
 
-    private Boid[] boids = new Boid[NUMBER_OF_BOIDS];
+    private Boid[] boids;
     private int moveTowardsMouse = 0;
     private int moveAwayFromMouse = 0;
     private float[] mousePosition = new float[2];
@@ -47,6 +47,7 @@ public class Simulation {
             separationForce = Float.parseFloat(prop.getProperty("boids.separationForce"));
             vision = Float.parseFloat(prop.getProperty("boids.vision"));
             dragRadius = Float.parseFloat(prop.getProperty("boids.dragRadius"));
+            boids = new Boid[NUMBER_OF_BOIDS];
         }catch (Exception e){
             System.out.println("Error loading shader program");
         }
