@@ -29,6 +29,9 @@ dependencies {
     implementation("org.joml:joml:1.10.5")
 
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
+
+    // add jackson
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 }
 
 tasks.test {

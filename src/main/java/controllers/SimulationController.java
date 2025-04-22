@@ -1,5 +1,6 @@
 package controllers;
 
+import clients.WeatherAPIClient;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLProfile;
 import models.Boid;

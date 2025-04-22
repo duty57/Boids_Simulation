@@ -1,0 +1,82 @@
+package clients;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.cdimascio.dotenv.Dotenv;
+import util.SimulationDataUtil;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+
+public class WeatherAPIClient {
+    private final HttpClient client = HttpClient.newHttpClient();
+
+    private class CityCoordinates {
+        float lat;
+        float lon;
+    }
+
+    private class CityData {
+        float temperature;// in kelvins
+        float visibility;// max value 10000
+        float windDeg;// meteorological
+        float windSpeed;// m/s
+        float clouds;// cloudiness %
+        float sunAngle; // 0 - sunrise, 180 - sunset
+    }
+
+    private CityCoordinates getCityCoordinates(String city) {
+        Dotenv dotenv = Dotenv.load();
+        String weatherApiKey = dotenv.get("WEATHER_API_KEY");
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create("http://api.openweathermap.org/geo/1.0/direct?q=" + city + "&appid=" + weatherApiKey)).build();
+
+        try{
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.body());
+
+            CityCoordinates cityCoordinates = new CityCoordinates();
+            cityCoordinates.lat = (float) root.get(0).get("lat").asDouble();
+            cityCoordinates.lon = (float) root.get(0).get("lon").asDouble();
+            System.out.println(cityCoordinates.lat + " " + cityCoordinates.lon);
+            return cityCoordinates;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public CityData getCityData(String city) {
+        Dotenv dotenv = Dotenv.load();
+        String weatherApiKey = dotenv.get("WEATHER_API_KEY");
+
+        CityCoordinates cityCoordinates = getCityCoordinates(city);
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.openweathermap.org/data/2.5/weather?lat=" + cityCoordinates.lat + "&lon=" + cityCoordinates.lon + "&appid=" + weatherApiKey)).build();
+        try{
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.body());
+
+            CityData cityData = new CityData();
+            cityData.temperature = SimulationDataUtil.toCelsius(root.get("main").get("temp").asDouble());
+            cityData.visibility = (float) root.get("visibility").asDouble();
+            cityData.windDeg = (float) root.get("wind").get("deg").asDouble();
+            cityData.windSpeed = (float) root.get("wind").get("speed").asDouble();
+            cityData.clouds = (float) root.get("clouds").get("all").asDouble();
+            cityData.sunAngle = SimulationDataUtil.calculatesunAngle(root.get("sys").get("sunrise").asDouble(), root.get("sys").get("sunset").asDouble(), root.get("timezone").asDouble());
+            System.out.println("sunAngle: " + cityData.sunAngle);
+
+            return cityData;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+}
