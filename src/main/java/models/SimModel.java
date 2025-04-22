@@ -1,9 +1,6 @@
 package models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +13,7 @@ import java.time.LocalDate;
 @Table(name = "\"Simulation\"")
 public class SimModel {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -58,4 +56,6 @@ public class SimModel {
     @Column(name = "sun_angle", nullable = false, precision = 8, scale = 3)
     private BigDecimal sunAngle;
 
+    @Column(name = "temperature", nullable = false, precision = 8, scale = 3)
+    private BigDecimal temperature;
 }

@@ -31,7 +31,6 @@ public class MainFrame extends JFrame {
     private GLCanvas canvas;
     private Simulation simulation;
     private SimulationController simulationController;
-    private SimulationService simulationService = new SimulationService();
 
     public MainFrame(SimulationController simulationController, Simulation simulation) {
         super("Boid Simulation");
@@ -150,7 +149,7 @@ private JPanel createSettingsPanel() {
         simulationPanel.add(createSliderPanel("Wind Speed", 0, 100, (int)(simulation.getWindSpeed() * 100)));
         simulationPanel.add(createSliderPanel("Cloudiness", 0, 100, (int)(simulation.getCloudiness() * 100)));
         simulationPanel.add(createSliderPanel("Sun Position", 0, 180, (int)(simulation.getSunAngle())));
-
+        //drag radius is missing
         JPanel simSavePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton simSaveButton = new JButton("Save");
         simSaveButton.setBackground(Color.getHSBColor(0.25f, 0.8f, 0.69f));
@@ -159,7 +158,15 @@ private JPanel createSettingsPanel() {
         simulationPanel.add(simSavePanel);
 
         simSaveButton.addActionListener(e -> {
+            new SwingWorker<SimModel, Void> () {
+                @Override
+                protected SimModel doInBackground() throws Exception {
+                    return simulationController.saveSimulation();
+                }
 
+                @Override
+                protected void done() {}
+            }.execute();
         });
 
         JScrollPane simulationScroll = new JScrollPane(simulationPanel,
@@ -264,29 +271,4 @@ private JPanel createSettingsPanel() {
             }
         });
     }
-
-    // move to controller ** later
-    private void saveSimulation() {
-        try{
-            SimModel simModel = new SimModel();
-            simModel.setUser(System.getProperty("user.name") + "_" + InetAddress.getLocalHost().getHostName());
-            simModel.setSimulationDate(LocalDate.now());
-            simModel.setMaxSpeed(BigDecimal.valueOf(simulation.getMaxSpeed()));
-            simModel.setAligmentForce(BigDecimal.valueOf(simulation.getAlignmentForce()));
-            simModel.setCohesionForce(BigDecimal.valueOf(simulation.getCohesionForce()));
-            simModel.setSeparationForce(BigDecimal.valueOf(simulation.getSeparationForce()));
-            simModel.setBoidVision(BigDecimal.valueOf(simulation.getVision()));
-            simModel.setDragForce(BigDecimal.valueOf(simulation.getDragForce()));
-            simModel.setTemperature(BigDecimal.valueOf(simulation.getTemperature()));
-            simModel.setWindSpeed(BigDecimal.valueOf(simulation.getWindSpeed()));
-            simModel.setWindDirection(BigDecimal.valueOf(simulation.getWindDirection()));
-            simModel.setSunAngle(BigDecimal.valueOf(simulation.getSunAngle()));
-
-            simulationService.addSimulation(simModel);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
 }

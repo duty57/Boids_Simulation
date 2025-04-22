@@ -7,9 +7,9 @@ import java.util.List;
 
 public class SimulationService {
 
-    private SimulationRepository simulationRepository;
+    private final SimulationRepository simulationRepository;
 
-    SimulationService(SimModel sim) {
+    public SimulationService() {
         this.simulationRepository = new SimulationRepository();
     }
 
