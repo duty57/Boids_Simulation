@@ -31,34 +31,10 @@ import java.util.Random;
 
 public class SimulationController {
 
-    MainFrame mainFrame;
     Simulation simulation;
 
-    public SimulationController(MainFrame mainFrame, Simulation simulation) {
-        this.mainFrame = mainFrame;
+    public SimulationController(Simulation simulation) {
         this.simulation = simulation;
-        this.mainFrame.setSimulation(simulation);
-    }
-
-    public void init() {
-
-        try{
-            System.out.println(InetAddress.getLocalHost().getHostName());
-            System.out.println(System.getProperty("user.name"));
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-        GLProfile profile = GLProfile.get(GLProfile.GL4);
-        GLCapabilities capabilities = new GLCapabilities(profile);
-        capabilities.setHardwareAccelerated(true);
-        capabilities.setDoubleBuffered(true);
-
-        this.mainFrame.init(capabilities);
-        OpenGLCanvas canvas = new OpenGLCanvas(this, simulation);
-        this.mainFrame.getCanvas().addGLEventListener(canvas);
-        this.mainFrame.setVisible(true);
-        setupMouseListeners();
-
     }
 
     public void initBoids() {
@@ -249,67 +225,6 @@ public class SimulationController {
         gl.glMemoryBarrier(GL4.GL_SHADER_STORAGE_BARRIER_BIT | GL4.GL_BUFFER_UPDATE_BARRIER_BIT);
         gl.glBindVertexArray(simulation.getVao());
         gl.glDrawArraysInstanced(GL4.GL_TRIANGLE_STRIP, 0, 4, simulation.getNUMBER_OF_BOIDS());
-    }
-
-    private void setupMouseListeners() {
-        mainFrame.getCanvas().addMouseMotionListener(new MouseMotionListener() {
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                System.out.println("mouseDragged");
-                mouseMoved(e);
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                System.out.println("mouseMoved");
-                float x = (2.0f * e.getX()) / mainFrame.getCanvas().getWidth() - 1.0f;
-                float y = 1.0f - (2.0f * e.getY()) / mainFrame.getCanvas().getHeight();
-
-                GL4 gl = mainFrame.getCanvas().getGL().getGL4();
-                updateMousePosition(gl, x, y);
-            }
-        });
-
-        mainFrame.getCanvas().addMouseListener(new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                System.out.println("mousePressed");
-                GL4 gl = mainFrame.getCanvas().getGL().getGL4();
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    setMoveTowardsMouse(gl, 1);
-                }else if (e.getButton() == MouseEvent.BUTTON3) {
-                    setMoveAwayFromMouse(gl, 1);
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                System.out.println("mouseReleased");
-                GL4 gl = mainFrame.getCanvas().getGL().getGL4();
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    setMoveTowardsMouse(gl, 0);
-                }else if (e.getButton() == MouseEvent.BUTTON3) {
-                    setMoveAwayFromMouse(gl, 0);
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
     }
 
     public void updateMousePosition(GL4 gl, float x, float y) {
