@@ -27,6 +27,12 @@ public class Simulation {
     private float vision;
     private float dragRadius;
 
+    private float temperature; //celsius
+    private float windSpeed;
+    private float windDirection;
+    private float cloudiness;
+    private float sunAngle;
+
     private Boid[] boids;
     private int moveTowardsMouse = 0;
     private int moveAwayFromMouse = 0;

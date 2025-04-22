@@ -1,6 +1,6 @@
 package services;
 
-import models.SimulationModel;
+import models.SimModel;
 import repositories.SimulationRepository;
 
 import java.util.List;
@@ -9,23 +9,23 @@ public class SimulationService {
 
     private SimulationRepository simulationRepository;
 
-    SimulationService(SimulationModel sim) {
+    SimulationService(SimModel sim) {
         this.simulationRepository = new SimulationRepository();
     }
 
-    public List<SimulationModel> getSimulations() {
+    public List<SimModel> getSimulations() {
         return simulationRepository.findAll();
     }
 
-    public SimulationModel addSimulation(SimulationModel sim) {
+    public SimModel addSimulation(SimModel sim) {
         return simulationRepository.add(sim);
     }
 
-    public SimulationModel updateSimulation(SimulationModel sim) {
+    public SimModel updateSimulation(SimModel sim) {
         return simulationRepository.update(sim);
     }
 
-    public void deleteSimulation(SimulationModel sim) {
+    public void deleteSimulation(SimModel sim) {
         simulationRepository.delete(sim);
     }
 }

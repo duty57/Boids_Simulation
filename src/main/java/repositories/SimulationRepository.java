@@ -4,7 +4,7 @@ package repositories;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import models.SimulationModel;
+import models.SimModel;
 
 import java.util.List;
 
@@ -13,22 +13,22 @@ public class SimulationRepository {
     @PersistenceContext
     private EntityManager em;
 
-    public List<SimulationModel> findAll() {
-        return em.createQuery("SELECT s FROM SimulationModel s", SimulationModel.class).getResultList();
+    public List<SimModel> findAll() {
+        return em.createQuery("SELECT s FROM SimModel s", SimModel.class).getResultList();
     }
 
     @Transactional
-    public SimulationModel add(SimulationModel sim) {
+    public SimModel add(SimModel sim) {
         return em.merge(sim);
     }
 
     @Transactional
-    public SimulationModel update(SimulationModel sim) {
+    public SimModel update(SimModel sim) {
         return em.merge(sim);
     }
 
     @Transactional
-    public void delete(SimulationModel sim) {
+    public void delete(SimModel sim) {
         em.remove(sim);
     }
 }
