@@ -3,6 +3,8 @@ package clients;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
+import lombok.Getter;
+import lombok.Setter;
 import util.SimulationDataUtil;
 
 import java.io.IOException;
@@ -20,7 +22,9 @@ public class WeatherAPIClient {
         float lon;
     }
 
-    private class CityData {
+    @Getter
+    @Setter
+    public class CityData {
         float temperature;// in kelvins
         float visibility;// max value 10000
         float windDeg;// meteorological
@@ -64,10 +68,10 @@ public class WeatherAPIClient {
 
             CityData cityData = new CityData();
             cityData.temperature = SimulationDataUtil.toCelsius(root.get("main").get("temp").asDouble());
-            cityData.visibility = (float) root.get("visibility").asDouble();
+            cityData.visibility = (float) root.get("visibility").asDouble() / 10000.0f;
             cityData.windDeg = (float) root.get("wind").get("deg").asDouble();
-            cityData.windSpeed = (float) root.get("wind").get("speed").asDouble();
-            cityData.clouds = (float) root.get("clouds").get("all").asDouble();
+            cityData.windSpeed = (float) root.get("wind").get("speed").asDouble() / 100.0f;
+            cityData.clouds = (float) root.get("clouds").get("all").asDouble() / 100.0f;
             cityData.sunAngle = SimulationDataUtil.calculatesunAngle(root.get("sys").get("sunrise").asDouble(), root.get("sys").get("sunset").asDouble(), root.get("timezone").asDouble());
             System.out.println("sunAngle: " + cityData.sunAngle);
 

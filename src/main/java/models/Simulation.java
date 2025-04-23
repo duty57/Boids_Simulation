@@ -1,7 +1,9 @@
 package models;
 
+import clients.WeatherAPIClient;
 import lombok.Getter;
 import lombok.Setter;
+import util.SimulationDataUtil;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -63,7 +65,30 @@ public class Simulation {
             System.out.println("Error loading shader program");
         }
 
+    }
 
+    public void update(SimModel model) {
+        this.maxSpeed = model.getMaxSpeed().floatValue();
+        this.alignmentForce = model.getAligmentForce().floatValue();
+        this.cohesionForce = model.getCohesionForce().floatValue();
+        this.separationForce = model.getSeparationForce().floatValue();
+        this.vision = model.getBoidVision().floatValue();
+        this.dragForce = model.getDragForce().floatValue();
+        this.dragRadius = model.getDragRadius().floatValue();
+        this.temperature = model.getTemperature().floatValue();
+        this.windSpeed = model.getWindSpeed().floatValue();
+        this.windDirection = model.getWindDirection().floatValue();
+        this.sunAngle = model.getSunAngle().floatValue();
+        this.cloudiness = model.getClouds().floatValue();
+    }
+
+    public void getCityData(WeatherAPIClient.CityData cityData) {
+        this.vision = cityData.getVisibility();
+        this.temperature = cityData.getTemperature();
+        this.windSpeed = cityData.getWindSpeed();
+        this.windDirection = cityData.getWindDeg();
+        this.sunAngle = cityData.getSunAngle();
+        this.cloudiness = cityData.getClouds();
     }
 
     public int getNumberOfBoids() {

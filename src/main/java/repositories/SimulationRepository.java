@@ -19,8 +19,12 @@ public class SimulationRepository {
         this.em = emf.createEntityManager();
     }
 
-    public List<SimModel> findAll() {
-        return em.createQuery("SELECT s FROM SimModel s", SimModel.class).getResultList();
+    public List<SimModel> findAll(String userName) {
+        return em.createQuery(
+                        "SELECT s FROM SimModel s WHERE s.user = :userName ORDER BY s.simulationDate DESC",
+                        SimModel.class)
+                .setParameter("userName", userName)
+                .getResultList();
     }
 
     public SimModel add(SimModel sim) {
@@ -30,16 +34,20 @@ public class SimulationRepository {
         return result;
     }
 
-    public SimModel update(SimModel sim) {
+
+    public void deleteById(Long id) {
         em.getTransaction().begin();
-        SimModel result = em.merge(sim);
+        SimModel sim = em.find(SimModel.class, id);
+        if (sim != null) {
+            em.remove(sim);
+        }
         em.getTransaction().commit();
-        return result;
     }
 
-    public void delete(SimModel sim) {
+    public SimModel findById(Long id) {
         em.getTransaction().begin();
-        em.remove(sim);
+        SimModel result = em.find(SimModel.class, id);
         em.getTransaction().commit();
+        return result;
     }
 }
