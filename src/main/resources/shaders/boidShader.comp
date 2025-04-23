@@ -25,8 +25,17 @@ uniform float separationForce;
 uniform float boidVision;
 uniform float dragRadius;
 
+uniform float windSpeed;
+uniform float windDirection;//meteorological degrees
+
+
 float calculateAngle(vec2 a, vec2 b) {
     return atan(b.y, b.x) - atan(a.y, a.x);
+}
+
+float convertDegrees(float deg) {
+    if (450 - deg > 360) return 90 - deg;
+    else return 450 - deg;
 }
 
 void main(){
@@ -90,12 +99,16 @@ void main(){
         separation = normalize(separation) * separationForce;
     }
 
+    //add wind speed
+    vec2 wind = vec2(windSpeed * cos(radians(convertDegrees(windDirection))), windSpeed * sin(radians(convertDegrees(windDirection)))) * 0.001;
+
     // Update boid velocity
-    boids[id].velocity.xy += alignment + cohesion + separation;
+    boids[id].velocity.xy += alignment + cohesion + separation + wind;
 
     if (length(boids[id].velocity.xy) > maxSpeed) {
         boids[id].velocity.xy = normalize(boids[id].velocity.xy) * maxSpeed;
     }
+
 
     // Update boid position and angle
     boids[id].position += vec4(boids[id].velocity.xy * deltaTime, 0.0, 1.0);

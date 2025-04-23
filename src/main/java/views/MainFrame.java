@@ -199,7 +199,7 @@ private JPanel createSettingsPanel() {
                 case "Separation Force" -> simulation.setSeparationForce(normalizedValue);
                 case "Vision Range" -> simulation.setVision(normalizedValue);
                 case "Drag Force" -> simulation.setDragForce(normalizedValue);
-                case "Temperature" -> simulation.setTemperature(value);
+                case "Temperature" -> simulation.setTemperature((value + 50.0f)/100.0f);//remake
                 case "Wind Speed" -> simulation.setWindSpeed(normalizedValue);
                 case "Cloudiness" -> simulation.setCloudiness(normalizedValue);
                 case "Sun Position" -> simulation.setSunAngle(value);

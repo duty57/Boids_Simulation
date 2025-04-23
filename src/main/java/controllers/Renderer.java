@@ -75,10 +75,18 @@ public class Renderer {
         gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "separationForce"), simulation.getSeparationForce());
         gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "boidVision"), simulation.getVision());
         gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "dragRadius"), simulation.getDragRadius());
-
         gl.glUniform2fv(gl.glGetUniformLocation(simulation.getShaderProgram(), "mousePosition"), 1, FloatBuffer.wrap(simulation.getMousePosition()));
         gl.glUniform1i(gl.glGetUniformLocation(simulation.getShaderProgram(), "moveTowardsMouse"), simulation.getMoveTowardsMouse());
         gl.glUniform1i(gl.glGetUniformLocation(simulation.getShaderProgram(), "moveAwayFromMouse"), simulation.getMoveAwayFromMouse());
+        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "windSpeed"), simulation.getWindSpeed());
+        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "windDirection"), simulation.getWindDirection()); //meteorological degrees
+    }
+
+    private void updateLightningUniforms(GL4 gl) {
+        gl.glUniform1f(gl.glGetUniformLocation(simulation.getRenderProgram(), "temperature"), simulation.getTemperature());
+        gl.glUniform1f(gl.glGetUniformLocation(simulation.getRenderProgram(), "cloudiness"), simulation.getCloudiness());
+        gl.glUniform1f(gl.glGetUniformLocation(simulation.getRenderProgram(), "sunAngle"), simulation.getSunAngle());
+
     }
 
     private int compileShader(GL4 gl, String resourcePath, int shaderType) {
@@ -144,6 +152,8 @@ public class Renderer {
 
         gl.glEnable(GL4.GL_DEBUG_OUTPUT);
         gl.glEnable(GL4.GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        gl.glEnable(GL4.GL_BLEND);
+        gl.glBlendFunc(GL4.GL_SRC_ALPHA, GL4.GL_ONE_MINUS_SRC_ALPHA);
 
         int computeShader = compileShader(gl, "boidShader.comp", GL4.GL_COMPUTE_SHADER);
         int vertexShader = compileShader(gl, "boidShader.vert", GL4.GL_VERTEX_SHADER);
@@ -195,11 +205,17 @@ public class Renderer {
         gl.glVertexAttribPointer(0, 2, GL4.GL_FLOAT, false, 0, 0);
 
         // Set initial uniform values
+        gl.glUseProgram(renderProgram);
+        updateLightningUniforms(gl);
+
         gl.glUseProgram(simulation.getShaderProgram());
         updateUniforms(gl);
     }
 
     public void update(GL4 gl, float deltaTime) {
+        gl.glUseProgram(simulation.getRenderProgram());
+        updateLightningUniforms(gl);
+
         gl.glUseProgram(simulation.getShaderProgram());
         gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "deltaTime"), deltaTime);
         updateUniforms(gl);

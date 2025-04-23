@@ -1,6 +1,6 @@
 ﻿#version 430
 
-layout(location = 0) in vec2 position;  // Triangle vertices input
+layout(location = 0) in vec2 position;// Triangle vertices input
 
 struct Boid {
     vec4 position;
@@ -11,6 +11,7 @@ struct Boid {
 layout(std430, binding = 0) buffer boidBuffer {
     Boid boids[];
 };
+
 
 out vec4 color;
 
@@ -27,6 +28,5 @@ void main() {
     vec2 finalPos = rotatedPos + boid.position.xy;
     gl_Position = vec4(finalPos, 0.0, 1.0);
 
-    // Color based on velocity
-    color = vec4(abs(boid.velocity.xy), 0.7, 1.0);
+    color = vec4(0.3 + length(boid.velocity.xy));
 }
