@@ -1,7 +1,5 @@
 package views;
 
-import clients.WeatherAPIClient;
-import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.awt.GLCanvas;
 
@@ -17,8 +15,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 
 @Getter
 @Setter
@@ -74,7 +70,7 @@ public class MainFrame extends JFrame {
 
         setVisible(true);
         animator.start();
-        setupMouseListeners();
+        simulationController.setupMouseListeners(canvas);
     }
 
     private JPanel createSettingsPanel() {
@@ -161,15 +157,18 @@ public class MainFrame extends JFrame {
         });
 
         searchButton.addActionListener(e -> {
-            WeatherAPIClient.CityData cityData = simulationController.getCityParameters(cityName.getText());
-            if (cityData != null) {
-                simulation.getCityData(cityData);
-                searchStatusLabel.setText("Data imported successfully");
-                searchStatusLabel.setForeground(Color.GREEN);
-            }else{
-                searchStatusLabel.setText("City not found");
-                searchStatusLabel.setForeground(Color.RED);
-            }
+            searchStatusLabel.setText("Loading...");
+            searchStatusLabel.setForeground(Color.BLUE);
+            simulationController.getCityParameters(cityName.getText(), cityData -> {
+                if (cityData != null) {
+                    simulation.getCityData(cityData);
+                    searchStatusLabel.setText("Data imported successfully");
+                    searchStatusLabel.setForeground(Color.GREEN);
+                } else {
+                    searchStatusLabel.setText("City not found");
+                    searchStatusLabel.setForeground(Color.RED);
+                }
+            });
         });
 
         buttonPanel.add(importButton);
@@ -223,20 +222,15 @@ public class MainFrame extends JFrame {
         simSaveButton.addActionListener(e -> {
             new SwingWorker<SimModel, Void>() {
                 @Override
-                protected SimModel doInBackground() throws Exception {
+                protected SimModel doInBackground() {
                     return simulationController.saveSimulation(historyListModel);
-                }
-
-                @Override
-                protected void done() {
                 }
             }.execute();
         });
 
-        JScrollPane simulationScroll = new JScrollPane(simulationPanel,
+        return new JScrollPane(simulationPanel,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        return simulationScroll;
     }
 
     private JPanel createSliderPanel(String label, int min, int max, int initial) {
@@ -250,7 +244,24 @@ public class MainFrame extends JFrame {
         JLabel valueLabel = new JLabel(String.valueOf(initial));
 
         slider.addChangeListener(e -> {
-            simulationController.updateSliderValues(slider.getValue(), valueLabel.getText());
+            int value = slider.getValue();
+            valueLabel.setText(String.valueOf(value));
+            // Here you would add code to update the simulation parameters
+
+            // Update simulation parameters based on slider label
+            float normalizedValue = value / 100.0f;
+            switch (label) {
+                case "Max Speed" -> simulation.setMaxSpeed(normalizedValue);
+                case "Alignment Force" -> simulation.setAlignmentForce(normalizedValue);
+                case "Cohesion Force" -> simulation.setCohesionForce(normalizedValue);
+                case "Separation Force" -> simulation.setSeparationForce(normalizedValue);
+                case "Vision Range" -> simulation.setVision(normalizedValue);
+                case "Drag Force" -> simulation.setDragForce(normalizedValue);
+                case "Temperature" -> simulation.setTemperature((value + 50.0f) / 100.0f);//remake
+                case "Wind Speed" -> simulation.setWindSpeed(normalizedValue);
+                case "Cloudiness" -> simulation.setCloudiness(normalizedValue);
+                case "Sun Position" -> simulation.setSunAngle(value);
+            }
         });
 
         panel.add(titleLabel, BorderLayout.NORTH);
@@ -260,63 +271,4 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    //move to controller
-    private void setupMouseListeners() {
-        canvas.addMouseMotionListener(new MouseMotionListener() {
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                mouseMoved(e);
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                float x = (2.0f * e.getX()) / canvas.getWidth() - 1.0f;
-                float y = 1.0f - (2.0f * e.getY()) / canvas.getHeight();
-
-                GL4 gl = canvas.getGL().getGL4();
-                simulationController.updateMousePosition(gl, x, y);
-            }
-        });
-
-        canvas.addMouseListener(new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                System.out.println("mousePressed");
-                GL4 gl = canvas.getGL().getGL4();
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    simulationController.setMoveTowardsMouse(gl, 1);
-                } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    simulationController.setMoveAwayFromMouse(gl, 1);
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                System.out.println("mouseReleased");
-                GL4 gl = canvas.getGL().getGL4();
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    simulationController.setMoveTowardsMouse(gl, 0);
-                } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    simulationController.setMoveAwayFromMouse(gl, 0);
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
-    }
 }

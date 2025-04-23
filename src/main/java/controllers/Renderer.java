@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class Renderer {
 
-    private Simulation simulation;
+    private final Simulation simulation;
 
     public Renderer(Simulation simulation) {
         this.simulation = simulation;
@@ -134,7 +134,7 @@ public class Renderer {
             int[] logLength = new int[1];
             gl.glGetProgramiv(program, GL4.GL_INFO_LOG_LENGTH, logLength, 0);
             byte[] log = new byte[logLength[0]];
-            gl.glGetProgramInfoLog(program, logLength[0], (int[]) null, 0, log, 0);
+            gl.glGetProgramInfoLog(program, logLength[0], null, 0, log, 0);
 
             String errorMessage = new String(log);
             System.err.println("Linking failed: " + errorMessage);
@@ -148,7 +148,7 @@ public class Renderer {
         gl.glDeleteVertexArrays(1, IntBuffer.wrap(new int[]{simulation.getVao()}).array(), 0);
     }
 
-    public void initOpenGL(GL4 gl, String shaderDir) {
+    public void initOpenGL(GL4 gl) {
 
         gl.glEnable(GL4.GL_DEBUG_OUTPUT);
         gl.glEnable(GL4.GL_DEBUG_OUTPUT_SYNCHRONOUS);

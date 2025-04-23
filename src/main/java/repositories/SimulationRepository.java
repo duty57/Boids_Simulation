@@ -11,11 +11,10 @@ import java.util.List;
 
 public class SimulationRepository {
 
-    private EntityManagerFactory emf;
-    private EntityManager em;
+    private final EntityManager em;
 
     public SimulationRepository() {
-        this.emf = Persistence.createEntityManagerFactory("simulation");
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("simulation");
         this.em = emf.createEntityManager();
     }
 

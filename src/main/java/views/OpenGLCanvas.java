@@ -11,9 +11,8 @@ import java.nio.IntBuffer;
 
 
 public class OpenGLCanvas implements GLEventListener {
-    private Renderer renderer;
+    private final Renderer renderer;
     private long lastTime;
-    private String shaderDir = "src/main/resources/shaders";
 
 
     public OpenGLCanvas(Renderer renderer) {
@@ -36,7 +35,7 @@ public class OpenGLCanvas implements GLEventListener {
         if (renderer != null) {
             renderer.initBoids();
             System.out.println("Boids initialized");
-            renderer.initOpenGL(gl, shaderDir);
+            renderer.initOpenGL(gl);
         }
     }
 

@@ -17,14 +17,14 @@ import java.net.http.HttpResponse;
 public class WeatherAPIClient {
     private final HttpClient client = HttpClient.newHttpClient();
 
-    private class CityCoordinates {
+    private static class CityCoordinates {
         float lat;
         float lon;
     }
 
     @Getter
     @Setter
-    public class CityData {
+    public static class CityData {
         float temperature;// in kelvins
         float visibility;// max value 10000
         float windDeg;// meteorological
@@ -48,9 +48,7 @@ public class WeatherAPIClient {
             cityCoordinates.lon = (float) root.get(0).get("lon").asDouble();
             System.out.println(cityCoordinates.lat + " " + cityCoordinates.lon);
             return cityCoordinates;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -76,9 +74,7 @@ public class WeatherAPIClient {
             System.out.println("sunAngle: " + cityData.sunAngle);
 
             return cityData;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

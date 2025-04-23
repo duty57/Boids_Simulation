@@ -7,10 +7,10 @@ import java.awt.event.MouseEvent;
 import models.SimulationCard;
 
 public class SimulationCardRenderer extends JPanel implements ListCellRenderer<SimulationCard> {
-    private JLabel titleLabel;
-    private JLabel visionLabel;
-    private JLabel temperatureLabel;
-    private JLabel maxSpeedLabel;
+    private final JLabel titleLabel;
+    private final JLabel visionLabel;
+    private final JLabel temperatureLabel;
+    private final JLabel maxSpeedLabel;
 
     public SimulationCardRenderer() {
         setLayout(new BorderLayout(5, 5));
@@ -64,8 +64,7 @@ public class SimulationCardRenderer extends JPanel implements ListCellRenderer<S
         int index = historyList.locationToIndex(e.getPoint());
         if (index < 0) return selectedCard;
 
-        SimulationCard card = historyListModel.getElementAt(index);
-        selectedCard = card;
+        selectedCard = historyListModel.getElementAt(index);
         System.out.println("Selected card: " + selectedCard);
         historyList.repaint();
         return selectedCard;

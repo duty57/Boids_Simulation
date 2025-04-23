@@ -3,11 +3,6 @@ package models;
 import clients.WeatherAPIClient;
 import lombok.Getter;
 import lombok.Setter;
-import util.SimulationDataUtil;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 

@@ -9,7 +9,7 @@ public class Boid {
     Vector4f position;
     Vector4f velocity;
     float angle;
-    float padding[] = new float[3];
+    float[] padding = new float[3];
 
     public Boid(Vector4f position, Vector4f velocity, float angle) {
         this.position = position;

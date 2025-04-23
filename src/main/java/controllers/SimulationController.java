@@ -2,6 +2,7 @@ package controllers;
 
 import clients.WeatherAPIClient;
 import com.jogamp.opengl.GL4;
+import com.jogamp.opengl.awt.GLCanvas;
 import models.SimModel;
 import models.Simulation;
 import models.SimulationCard;
@@ -10,6 +11,9 @@ import services.SimulationService;
 import javax.swing.*;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -23,7 +27,7 @@ public class SimulationController {
 
     Simulation simulation;
     private final SimulationService simulationService = new SimulationService();
-    private WeatherAPIClient weatherClient = new WeatherAPIClient();
+    private final WeatherAPIClient weatherClient = new WeatherAPIClient();
 
     public SimulationController(Simulation simulation) {
         this.simulation = simulation;
@@ -49,7 +53,7 @@ public class SimulationController {
     }
 
     public SimModel saveSimulation(DefaultListModel<SimulationCard> historyListModel) {
-        try{
+        try {
             SimModel simModel = new SimModel();
             simModel.setUser(System.getProperty("user.name") + "_" + InetAddress.getLocalHost().getHostName());
             simModel.setSimulationDate(LocalDate.now());
@@ -73,6 +77,7 @@ public class SimulationController {
             throw new RuntimeException(e);
         }
     }
+
     public void getSimulationsFromDB(Consumer<List<SimModel>> callback) {
         new SwingWorker<List<SimModel>, Void>() {
 
@@ -83,10 +88,10 @@ public class SimulationController {
 
             @Override
             protected void done() {
-                try{
+                try {
                     List<SimModel> simulation = get();
                     callback.accept(simulation);
-                }catch(Exception e){
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
             }
@@ -108,11 +113,12 @@ public class SimulationController {
             }
         });
     }
+
     public void deleteSimulation(SimulationCard simCard, DefaultListModel<SimulationCard> historyListModel) {
         new SwingWorker<Void, Void>() {
 
             @Override
-            protected Void doInBackground() throws Exception {
+            protected Void doInBackground(){
                 simulationService.deleteSimulation(simCard);
                 loadSimulations(historyListModel);
                 return null;
@@ -121,9 +127,11 @@ public class SimulationController {
 
         }.execute();
     }
+
     public SimModel importSimulationData(SimulationCard simCard) {
         return simulationService.getSimulationById(simCard.getId());
     }
+
     public void updateSliderValues(int value, String label) {
         float normalizedValue = value / 100.0f;
         switch (label) {
@@ -139,6 +147,7 @@ public class SimulationController {
             case "Sun Position" -> simulation.setSunAngle(value);
         }
     }
+
     public void importSliderValues(JPanel simulationPanel, SimModel importedModel) {
         // Update all sliders
         for (Component comp : simulationPanel.getComponents()) {
@@ -167,7 +176,83 @@ public class SimulationController {
             }
         }
     }
-    public WeatherAPIClient.CityData getCityParameters(String cityName) {
-        return weatherClient.getCityData(cityName);
+
+    public void getCityParameters(String cityName, Consumer<WeatherAPIClient.CityData> callback) {
+        new SwingWorker<WeatherAPIClient.CityData, Void>() {
+            @Override
+            protected WeatherAPIClient.CityData doInBackground() {
+                return weatherClient.getCityData(cityName);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    WeatherAPIClient.CityData cityData = get();
+                    callback.accept(cityData);
+                } catch (Exception e) {
+                    System.err.println("Error fetching city data: " + e.getMessage());
+                }
+            }
+        }.execute();
+    }
+
+    //move to controller
+    public void setupMouseListeners(GLCanvas canvas) {
+        canvas.addMouseMotionListener(new MouseMotionListener() {
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                mouseMoved(e);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                float x = (2.0f * e.getX()) / canvas.getWidth() - 1.0f;
+                float y = 1.0f - (2.0f * e.getY()) / canvas.getHeight();
+
+                GL4 gl = canvas.getGL().getGL4();
+                updateMousePosition(gl, x, y);
+            }
+        });
+
+        canvas.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                System.out.println("mousePressed");
+                GL4 gl = canvas.getGL().getGL4();
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    setMoveTowardsMouse(gl, 1);
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    setMoveAwayFromMouse(gl, 1);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                System.out.println("mouseReleased");
+                GL4 gl = canvas.getGL().getGL4();
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    setMoveTowardsMouse(gl, 0);
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    setMoveAwayFromMouse(gl, 0);
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
     }
 }
