@@ -162,6 +162,7 @@ public class MainFrame extends JFrame {
             simulationController.getCityParameters(cityName.getText(), cityData -> {
                 if (cityData != null) {
                     simulation.getCityData(cityData);
+                    simulationController.importSliderValues(simulationPanel, simulation);
                     searchStatusLabel.setText("Data imported successfully");
                     searchStatusLabel.setForeground(Color.GREEN);
                 } else {
@@ -211,6 +212,7 @@ public class MainFrame extends JFrame {
         simulationPanel.add(createSliderPanel("Wind Speed", 0, 100, (int) (simulation.getWindSpeed() * 100)));
         simulationPanel.add(createSliderPanel("Cloudiness", 0, 100, (int) (simulation.getCloudiness() * 100)));
         simulationPanel.add(createSliderPanel("Sun Position", 0, 180, (int) (simulation.getSunAngle())));
+        simulationPanel.add(createSliderPanel("Wind Direction", 0, 360, (int) (simulation.getWindDirection())));
         //drag radius is missing
         JPanel simSavePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton simSaveButton = new JButton("Save");
@@ -261,6 +263,7 @@ public class MainFrame extends JFrame {
                 case "Wind Speed" -> simulation.setWindSpeed(normalizedValue);
                 case "Cloudiness" -> simulation.setCloudiness(normalizedValue);
                 case "Sun Position" -> simulation.setSunAngle(value);
+                case "Wind Direction" -> simulation.setWindDirection(value);
             }
         });
 

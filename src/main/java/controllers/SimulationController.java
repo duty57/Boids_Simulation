@@ -21,6 +21,7 @@ import java.nio.FloatBuffer;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 public class SimulationController {
@@ -132,31 +133,27 @@ public class SimulationController {
         return simulationService.getSimulationById(simCard.getId());
     }
 
-    public void updateSliderValues(int value, String label) {
-        float normalizedValue = value / 100.0f;
-        switch (label) {
-            case "Max Speed" -> simulation.setMaxSpeed(normalizedValue);
-            case "Alignment Force" -> simulation.setAlignmentForce(normalizedValue);
-            case "Cohesion Force" -> simulation.setCohesionForce(normalizedValue);
-            case "Separation Force" -> simulation.setSeparationForce(normalizedValue);
-            case "Vision Range" -> simulation.setVision(normalizedValue);
-            case "Drag Force" -> simulation.setDragForce(normalizedValue);
-            case "Temperature" -> simulation.setTemperature((value + 50.0f) / 100.0f);//remake
-            case "Wind Speed" -> simulation.setWindSpeed(normalizedValue);
-            case "Cloudiness" -> simulation.setCloudiness(normalizedValue);
-            case "Sun Position" -> simulation.setSunAngle(value);
-        }
-    }
-
     public void importSliderValues(JPanel simulationPanel, SimModel importedModel) {
-        // Update all sliders
         for (Component comp : simulationPanel.getComponents()) {
             if (comp instanceof JPanel sliderPanel) {
-                JLabel label = (JLabel) ((BorderLayout) sliderPanel.getLayout()).getLayoutComponent(BorderLayout.NORTH);
-                JSlider slider = (JSlider) ((BorderLayout) sliderPanel.getLayout()).getLayoutComponent(BorderLayout.CENTER);
-                JLabel valueLabel = (JLabel) ((BorderLayout) sliderPanel.getLayout()).getLayoutComponent(BorderLayout.EAST);
+                Component[] components = sliderPanel.getComponents();
+                JLabel label = null;
+                JSlider slider = null;
+                JLabel valueLabel = null;
 
-                if (label != null && slider != null) {
+                for (Component c : components) {
+                    if (c instanceof JLabel) {
+                        if (label == null) {
+                            label = (JLabel) c;
+                        } else {
+                            valueLabel = (JLabel) c;
+                        }
+                    } else if (c instanceof JSlider) {
+                        slider = (JSlider) c;
+                    }
+                }
+
+                if (label != null && slider != null && valueLabel != null) {
                     int value = switch (label.getText()) {
                         case "Max Speed" -> (int) (importedModel.getMaxSpeed().floatValue() * 100);
                         case "Alignment Force" -> (int) (importedModel.getAligmentForce().floatValue() * 100);
@@ -168,12 +165,60 @@ public class SimulationController {
                         case "Wind Speed" -> (int) (importedModel.getWindSpeed().floatValue() * 100);
                         case "Cloudiness" -> (int) (importedModel.getClouds().floatValue() * 100);
                         case "Sun Position" -> (int) (importedModel.getSunAngle().floatValue());
+                        case "Wind Direction" -> (int) (importedModel.getWindDirection().floatValue());
                         default -> slider.getValue();
                     };
                     slider.setValue(value);
                     valueLabel.setText(String.valueOf(value));
                 }
             }
+        }
+    }
+    public void importSliderValues(JPanel simulationPanel, Simulation simulation) {
+        for (Component comp : simulationPanel.getComponents()) {
+            if (comp instanceof JPanel sliderPanel) {
+                updateSliderPanel(sliderPanel, label -> {
+                    return switch (label) {
+                        case "Max Speed" -> (int) (simulation.getMaxSpeed() * 100);
+                        case "Alignment Force" -> (int) (simulation.getAlignmentForce() * 100);
+                        case "Cohesion Force" -> (int) (simulation.getCohesionForce() * 100);
+                        case "Separation Force" -> (int) (simulation.getSeparationForce() * 100);
+                        case "Vision Range" -> (int) (simulation.getVision() * 100);
+                        case "Drag Force" -> (int) (simulation.getDragForce() * 100);
+                        case "Temperature" -> (int) (simulation.getTemperature());
+                        case "Wind Speed" -> (int) (simulation.getWindSpeed() * 100);
+                        case "Cloudiness" -> (int) (simulation.getCloudiness() * 100);
+                        case "Sun Position" -> (int) (simulation.getSunAngle());
+                        case "Wind Direction" -> (int) (simulation.getWindDirection());
+                        default -> 0;
+                    };
+                });
+            }
+        }
+    }
+
+    private void updateSliderPanel(JPanel sliderPanel, Function<String, Integer> valueProvider) {
+        Component[] components = sliderPanel.getComponents();
+        JLabel label = null;
+        JSlider slider = null;
+        JLabel valueLabel = null;
+
+        for (Component c : components) {
+            if (c instanceof JLabel) {
+                if (label == null) {
+                    label = (JLabel) c;
+                } else {
+                    valueLabel = (JLabel) c;
+                }
+            } else if (c instanceof JSlider) {
+                slider = (JSlider) c;
+            }
+        }
+
+        if (label != null && slider != null && valueLabel != null) {
+            int value = valueProvider.apply(label.getText());
+            slider.setValue(value);
+            valueLabel.setText(String.valueOf(value));
         }
     }
 
