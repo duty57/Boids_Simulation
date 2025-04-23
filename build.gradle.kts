@@ -32,6 +32,9 @@ dependencies {
 
     // add jackson
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+
+    // add apache commons
+    implementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
 tasks.test {

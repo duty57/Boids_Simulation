@@ -6,6 +6,8 @@ import com.jogamp.opengl.awt.GLCanvas;
 import models.SimModel;
 import models.Simulation;
 import models.SimulationCard;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import services.SimulationService;
 
 import javax.swing.*;
@@ -223,6 +225,11 @@ public class SimulationController {
     }
 
     public void getCityParameters(String cityName, Consumer<WeatherAPIClient.CityData> callback) {
+        if (StringUtils.isBlank(cityName)) {
+            callback.accept(null);
+            return;
+        }
+
         new SwingWorker<WeatherAPIClient.CityData, Void>() {
             @Override
             protected WeatherAPIClient.CityData doInBackground() {
@@ -232,8 +239,8 @@ public class SimulationController {
             @Override
             protected void done() {
                 try {
-                    WeatherAPIClient.CityData cityData = get();
-                    callback.accept(cityData);
+                    callback.accept(ObjectUtils.defaultIfNull(get(), null));
+
                 } catch (Exception e) {
                     System.err.println("Error fetching city data: " + e.getMessage());
                 }
@@ -241,7 +248,6 @@ public class SimulationController {
         }.execute();
     }
 
-    //move to controller
     public void setupMouseListeners(GLCanvas canvas) {
         canvas.addMouseMotionListener(new MouseMotionListener() {
 

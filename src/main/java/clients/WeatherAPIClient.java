@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import util.SimulationDataUtil;
 
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class WeatherAPIClient {
     }
 
     public CityData getCityData(String city) {
+        if (StringUtils.isBlank(city)) return null;
         Dotenv dotenv = Dotenv.load();
         String weatherApiKey = dotenv.get("WEATHER_API_KEY");
 

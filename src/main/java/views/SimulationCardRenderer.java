@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 
 import models.SimulationCard;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class SimulationCardRenderer extends JPanel implements ListCellRenderer<SimulationCard> {
     private final JLabel titleLabel;
@@ -44,23 +46,30 @@ public class SimulationCardRenderer extends JPanel implements ListCellRenderer<S
     @Override
     public Component getListCellRendererComponent(JList<? extends SimulationCard> list,
                                                   SimulationCard card, int index, boolean isSelected, boolean cellHasFocus) {
-        titleLabel.setText(card.getTitle());
-        visionLabel.setText("Vision: " + card.getVision() + "m");
-        temperatureLabel.setText("Temperature: " + card.getTemperature() + "°C");
-        maxSpeedLabel.setText("Speed: " + card.getMaxSpeed() + "m/s");
+        titleLabel.setText(StringUtils.defaultString(card.getTitle(), "Untitled"));
+        visionLabel.setText(String.format("Vision: %s m",
+                ObjectUtils.defaultIfNull(card.getVision(), 0.0f)));
+        temperatureLabel.setText(String.format("Temperature: %s°C",
+                ObjectUtils.defaultIfNull(card.getTemperature(), 0.0f)));
+        maxSpeedLabel.setText(String.format("Speed: %s m/s",
+                ObjectUtils.defaultIfNull(card.getMaxSpeed(), 0.0f)));
 
         if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
+            setBackground(ObjectUtils.defaultIfNull(list.getSelectionBackground(), Color.LIGHT_GRAY));
+            setForeground(ObjectUtils.defaultIfNull(list.getSelectionForeground(), Color.BLACK));
         } else {
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
+            setBackground(ObjectUtils.defaultIfNull(list.getBackground(), Color.WHITE));
+            setForeground(ObjectUtils.defaultIfNull(list.getForeground(), Color.BLACK));
         }
 
         return this;
     }
 
     public static SimulationCard onMouseClicked(MouseEvent e, DefaultListModel<SimulationCard> historyListModel, JList<SimulationCard> historyList, SimulationCard selectedCard) {
+        if (ObjectUtils.anyNull(e, historyListModel, historyList)) {
+            return selectedCard;
+        }
+
         int index = historyList.locationToIndex(e.getPoint());
         if (index < 0) return selectedCard;
 

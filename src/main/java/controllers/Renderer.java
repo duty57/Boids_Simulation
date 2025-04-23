@@ -3,6 +3,7 @@ package controllers;
 import com.jogamp.opengl.GL4;
 import models.Boid;
 import models.Simulation;
+import org.apache.commons.lang3.StringUtils;
 import org.joml.Vector4f;
 
 import java.io.IOException;
@@ -90,6 +91,8 @@ public class Renderer {
     }
 
     private int compileShader(GL4 gl, String resourcePath, int shaderType) {
+        if (StringUtils.isBlank(resourcePath)) return -1;
+
         int shaderId = gl.glCreateShader(shaderType);
 
         try {

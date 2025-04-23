@@ -10,6 +10,7 @@ import lombok.Setter;
 import models.SimModel;
 import models.Simulation;
 import models.SimulationCard;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -239,6 +240,11 @@ public class MainFrame extends JFrame {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        // Validate input parameters
+        min = NumberUtils.max(min, Integer.MIN_VALUE);
+        max = NumberUtils.min(max, Integer.MAX_VALUE);
+        initial = NumberUtils.max(min, NumberUtils.min(max, initial));
 
         JLabel titleLabel = new JLabel(label);
         JSlider slider = new JSlider(min, max, initial);
