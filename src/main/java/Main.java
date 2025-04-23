@@ -1,5 +1,6 @@
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
+import controllers.Renderer;
 import controllers.SimulationController;
 import models.Simulation;
 import views.MainFrame;
@@ -19,7 +20,8 @@ public class Main {
         capabilities.setDoubleBuffered(true);
         mainFrame.init(capabilities);
 
-        OpenGLCanvas canvas = new OpenGLCanvas(simulationController, simulation);
+        Renderer renderer = new Renderer(simulation);
+        OpenGLCanvas canvas = new OpenGLCanvas(renderer);
         mainFrame.getCanvas().addGLEventListener(canvas);
         mainFrame.setVisible(true);
     }
