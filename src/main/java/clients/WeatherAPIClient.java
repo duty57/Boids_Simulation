@@ -38,9 +38,9 @@ public class WeatherAPIClient {
         Dotenv dotenv = Dotenv.load();
         String weatherApiKey = dotenv.get("WEATHER_API_KEY");
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create("http://api.openweathermap.org/geo/1.0/direct?q=" + city + "&appid=" + weatherApiKey)).build();
-
         try{
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.body().equals("[]")) { return null; }
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.body());
 
@@ -60,6 +60,7 @@ public class WeatherAPIClient {
         String weatherApiKey = dotenv.get("WEATHER_API_KEY");
 
         CityCoordinates cityCoordinates = getCityCoordinates(city);
+        if (cityCoordinates == null) return null;
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.openweathermap.org/data/2.5/weather?lat=" + cityCoordinates.lat + "&lon=" + cityCoordinates.lon + "&appid=" + weatherApiKey)).build();
         try{
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
