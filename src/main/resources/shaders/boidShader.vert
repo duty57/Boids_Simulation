@@ -14,6 +14,8 @@ layout(std430, binding = 0) buffer boidBuffer {
 
 
 out vec4 color;
+out vec3 FragPos;
+out vec3 Normal;
 
 void main() {
     Boid boid = boids[gl_InstanceID];
@@ -29,4 +31,6 @@ void main() {
     gl_Position = vec4(finalPos, 0.0, 1.0);
 
     color = vec4(0.3 + length(boid.velocity.xy));
+    FragPos = boid.position.xyz;
+    Normal = vec3(0.0, 0.0, 1.0);
 }
