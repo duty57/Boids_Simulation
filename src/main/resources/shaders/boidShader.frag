@@ -9,14 +9,13 @@ uniform float sunAngle;
 
 in vec3 Normal;
 in vec3 FragPos;
+
 void main() {
-    float redShift = max(0, temperature - 0.6);
-    float blueShift = max(0, 0.6 - temperature);
 
     vec3 lightColor = vec3(
-    (165.0f + redShift * 75.0f - blueShift * 20.0f),
-    119.0f + redShift * 50.0f - blueShift * 50.0f,
-    (68.0f  + blueShift * 100.0f - redShift * 30.0f)
+        mix(76.0f, 248.0f, temperature),
+        mix(165.0f, 92.0f, temperature),
+        mix(255.0f, 56.0f, temperature)
     ) / 255.0;
 
     vec3 lightPos = vec3(1000.0f * cos(radians(180 - sunAngle)), 0.0f, 1000.0f * sin(radians(180 - sunAngle)));
