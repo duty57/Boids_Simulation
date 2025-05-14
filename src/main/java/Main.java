@@ -3,12 +3,15 @@ import com.jogamp.opengl.GLProfile;
 import controllers.Renderer;
 import controllers.SimulationController;
 import models.Simulation;
+import util.DatabaseInitializer;
 import views.MainFrame;
 import views.OpenGLCanvas;
 
 
 public class Main {
     public static void main(String[] args) {
+
+        DatabaseInitializer.initializeDatabase();
 
         Simulation simulation = new Simulation();
         SimulationController simulationController = new SimulationController(simulation);
