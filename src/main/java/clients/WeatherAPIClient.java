@@ -16,6 +16,7 @@ import java.net.http.HttpResponse;
 
 
 public class WeatherAPIClient {
+    private static WeatherAPIClient instance;
     private final HttpClient client = HttpClient.newHttpClient();
 
     private static class CityCoordinates {
@@ -32,6 +33,17 @@ public class WeatherAPIClient {
         float windSpeed;// m/s
         float clouds;// cloudiness %
         float sunAngle; // 0 - sunrise, 180 - sunset
+    }
+
+
+    private WeatherAPIClient(){}
+
+    public static WeatherAPIClient getClient(){
+        if (instance == null){
+            instance = new WeatherAPIClient();
+            return instance;
+        }
+        return instance;
     }
 
     private CityCoordinates getCityCoordinates(String city) {

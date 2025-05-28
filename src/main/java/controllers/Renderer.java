@@ -16,14 +16,21 @@ import java.util.Objects;
 import java.util.Random;
 
 public class Renderer {
-
+    private static Renderer instance;
     private final Simulation simulation;
     private final Wind wind = new Wind();
     private final Matrix4f transformationMatrix = new Matrix4f();
     private final Vector3f translation = new Vector3f();
     private final Object windLock = new Object();
-    public Renderer(Simulation simulation) {
+    private Renderer(Simulation simulation) {
         this.simulation = simulation;
+    }
+
+    public static Renderer getInstance(Simulation simulation) {
+        if (instance == null) {
+            instance = new Renderer(simulation);
+        }
+        return instance;
     }
 
     private void initSsbo(GL4 gl) {

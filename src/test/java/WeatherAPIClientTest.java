@@ -7,7 +7,7 @@ public class WeatherAPIClientTest {
 
     @Test
     public void testCityData() {
-        WeatherAPIClient client = new WeatherAPIClient();
+        WeatherAPIClient client = WeatherAPIClient.getClient();
         WeatherAPIClient.CityData cityData = client.getCityData("London");
         assertNotNull(cityData);
 

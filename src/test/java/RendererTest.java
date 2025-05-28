@@ -8,8 +8,8 @@ public class RendererTest {
 
     @Test
     public void testDataSetup() {
-        Simulation simulation = new Simulation();
-        Renderer renderer = new Renderer(simulation);
+        Simulation simulation = Simulation.getInstance();
+        Renderer renderer = Renderer.getInstance(simulation);
 
         renderer.initBoids();
         assertNotNull(simulation.getBoids());

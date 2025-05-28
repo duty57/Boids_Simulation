@@ -20,8 +20,6 @@ public class OpenGLCanvas implements GLEventListener {
         this.renderer = renderer;
     }
 
-    // Default constructor for testing
-
     @Override
     public void init(GLAutoDrawable drawable) {
         GL4 gl = drawable.getGL().getGL4();

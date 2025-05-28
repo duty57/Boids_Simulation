@@ -13,6 +13,7 @@ import org.apache.commons.lang3.ObjectUtils;
 @Getter
 @Setter
 public class Simulation {
+    private static Simulation instance;
 
     private int shaderProgram;
     private int renderProgram;
@@ -39,7 +40,7 @@ public class Simulation {
     private int moveAwayFromMouse = 0;
     private float[] mousePosition = new float[2];
 
-    public Simulation() {
+    private Simulation() {
         Properties prop = new Properties();
         InputStream input;
         input = Simulation.class.getClassLoader().getResourceAsStream("config/simulation.properties");
@@ -64,6 +65,13 @@ public class Simulation {
             System.out.println("Error loading shader program");
         }
 
+    }
+
+    public static Simulation getInstance() {
+        if (instance == null) {
+            instance = new Simulation();
+        }
+        return instance;
     }
 
 

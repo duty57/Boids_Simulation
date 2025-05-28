@@ -13,8 +13,8 @@ public class Main {
 
         DatabaseInitializer.initializeDatabase();
 
-        Simulation simulation = new Simulation();
-        SimulationController simulationController = new SimulationController(simulation);
+        Simulation simulation = Simulation.getInstance();
+        SimulationController simulationController = SimulationController.getController(simulation);
         MainFrame mainFrame = new MainFrame(simulationController, simulation);
 
         GLProfile profile = GLProfile.get(GLProfile.GL4);
@@ -23,7 +23,7 @@ public class Main {
         capabilities.setDoubleBuffered(true);
         mainFrame.init(capabilities);
 
-        Renderer renderer = new Renderer(simulation);
+        Renderer renderer = Renderer.getInstance(simulation);
         OpenGLCanvas canvas = new OpenGLCanvas(renderer);
         mainFrame.getCanvas().addGLEventListener(canvas);
         mainFrame.setVisible(true);

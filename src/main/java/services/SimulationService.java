@@ -9,11 +9,18 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 public class SimulationService {
-
+    private static SimulationService instance;
     private final SimulationRepository simulationRepository;
 
-    public SimulationService() {
-        this.simulationRepository = new SimulationRepository();
+    private SimulationService() {
+        this.simulationRepository = SimulationRepository.getRepository();
+    }
+
+    public static SimulationService getService() {
+        if (instance == null) {
+            instance = new SimulationService();
+        }
+        return instance;
     }
 
     public List<SimModel> getSimulations() throws UnknownHostException {

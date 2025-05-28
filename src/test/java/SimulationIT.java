@@ -10,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SimulationIT {
-    private SimulationService simulationService = new SimulationService();
+    private final SimulationService simulationService = SimulationService.getService();
     @Test
     public void saveData() {
 

@@ -10,12 +10,20 @@ import models.SimModel;
 import java.util.List;
 
 public class SimulationRepository {
-
+    private static SimulationRepository instance;
     private final EntityManager em;
 
-    public SimulationRepository() {
+    private SimulationRepository() {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("simulation");
         this.em = emf.createEntityManager();
+    }
+
+    public static SimulationRepository getRepository() {
+        if (instance == null) {
+            instance = new SimulationRepository();
+        }
+
+        return instance;
     }
 
     public List<SimModel> findAll(String userName) {

@@ -27,13 +27,19 @@ import java.util.function.Function;
 
 
 public class SimulationController {
-
+    private static SimulationController instance;
     Simulation simulation;
-    private final SimulationService simulationService = new SimulationService();
-    private final WeatherAPIClient weatherClient = new WeatherAPIClient();
+    private final SimulationService simulationService = SimulationService.getService();
+    private final WeatherAPIClient weatherClient = WeatherAPIClient.getClient();
 
-    public SimulationController(Simulation simulation) {
+    private SimulationController(Simulation simulation) {
         this.simulation = simulation;
+    }
+    public static SimulationController getController(Simulation simulation) {
+        if (instance == null){
+            instance = new SimulationController(simulation);
+        }
+        return instance;
     }
 
     public void updateMousePosition(GL4 gl, float x, float y) {
