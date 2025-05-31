@@ -1,29 +1,28 @@
 package controllers;
 
 import com.jogamp.opengl.GL4;
-import models.Boid;
 import models.Simulation;
 import models.Wind;
-import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
-import java.io.IOException;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 public class Renderer {
     private static Renderer instance;
     private final Simulation simulation;
+    private final ShaderController shaderController;
+    private final RenderInitializer renderInitializer;
     private final Wind wind = new Wind();
     private final Matrix4f transformationMatrix = new Matrix4f();
     private final Vector3f translation = new Vector3f();
     private final Object windLock = new Object();
     private Renderer(Simulation simulation) {
-        this.simulation = simulation;
+        this.simulation = Objects.requireNonNull(simulation);
+        shaderController = ShaderController.getInstance(Objects.requireNonNull(simulation));
+        renderInitializer = RenderInitializer.getInstance();
     }
 
     public static Renderer getInstance(Simulation simulation) {
@@ -34,64 +33,11 @@ public class Renderer {
     }
 
     private void initSsbo(GL4 gl) {
-        // create SSBO
-        gl.glGenBuffers(1, simulation.getSsbo(), 0);
-        gl.glBindBuffer(GL4.GL_SHADER_STORAGE_BUFFER, simulation.getSsbo()[0]);
-
-        int structSize = 48;
-        int bufferSize = simulation.getNUMBER_OF_BOIDS() * structSize;
-        FloatBuffer boidData = FloatBuffer.allocate(bufferSize / 4);
-
-        System.out.println("Boids size: " + simulation.getBoids().length);
-        for (Boid boid : simulation.getBoids()) {
-            Vector4f position = boid.getPosition();
-            Vector4f velocity = boid.getVelocity();
-            // Position (vec4)
-            boidData.put(new float[] {position.x, position.y, position.z, position.w});
-            // Velocity (vec4)
-            boidData.put(new float[] {velocity.x, velocity.y, velocity.z, velocity.x});
-            // Angle (float)
-            boidData.put(boid.getAngle());
-        }
-        boidData.flip();
-
-        gl.glBufferData(GL4.GL_SHADER_STORAGE_BUFFER, bufferSize, boidData, GL4.GL_STATIC_DRAW);
-        gl.glBindBufferBase(GL4.GL_SHADER_STORAGE_BUFFER, 0, simulation.getSsbo()[0]);
+        renderInitializer.initSsbo(gl, simulation);
     }
 
     public void initBoids() {
-        Random positionRandom = new Random();
-        Random velocityRandom = new Random();
-        Random angleRandom = new Random();
-
-        for (int i = 0; i < simulation.getNumberOfBoids(); i++) {
-            Vector4f position = new Vector4f(positionRandom.nextFloat(), positionRandom.nextFloat(), 0.0f, 1.0f);
-            Vector4f velocity = new Vector4f(velocityRandom.nextFloat(), velocityRandom.nextFloat(), 0.0f, 1.0f);
-            float angle = angleRandom.nextFloat() * 360.0f;
-            simulation.getBoids()[i] = new Boid(position, velocity, angle);
-        }
-    }
-
-    private void updateUniforms(GL4 gl) {
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "maxSpeed"), simulation.getMaxSpeed());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "dragForce"), simulation.getDragForce());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "alignmentForce"), simulation.getAlignmentForce());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "cohesionForce"), simulation.getCohesionForce());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "separationForce"), simulation.getSeparationForce());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "boidVision"), simulation.getVision());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "dragRadius"), simulation.getDragRadius());
-        gl.glUniform2fv(gl.glGetUniformLocation(simulation.getShaderProgram(), "mousePosition"), 1, FloatBuffer.wrap(simulation.getMousePosition()));
-        gl.glUniform1i(gl.glGetUniformLocation(simulation.getShaderProgram(), "moveTowardsMouse"), simulation.getMoveTowardsMouse());
-        gl.glUniform1i(gl.glGetUniformLocation(simulation.getShaderProgram(), "moveAwayFromMouse"), simulation.getMoveAwayFromMouse());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "windSpeed"), simulation.getWindSpeed());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "windDirection"), simulation.getWindDirection()); //meteorological degrees
-    }
-
-    private void updateLightningUniforms(GL4 gl) {
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getRenderProgram(), "temperature"), simulation.getTemperature());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getRenderProgram(), "cloudiness"), simulation.getCloudiness());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getRenderProgram(), "sunAngle"), simulation.getSunAngle());
-
+        renderInitializer.initBoids(simulation);
     }
 
     private void startWindUpdateThread() {
@@ -136,60 +82,6 @@ public class Renderer {
         }
     }
 
-    private int compileShader(GL4 gl, String resourcePath, int shaderType) {
-        if (StringUtils.isBlank(resourcePath)) return -1;
-
-        int shaderId = gl.glCreateShader(shaderType);
-
-        try {
-            String shaderSource = new String(
-                    Objects.requireNonNull(SimulationController.class.getClassLoader()
-                                    .getResourceAsStream("shaders/" + resourcePath))
-                            .readAllBytes()
-            );
-            gl.glShaderSource(shaderId, 1, new String[]{shaderSource}, null);
-            gl.glCompileShader(shaderId);
-
-            // Check compilation status
-            int[] status = new int[1];
-            gl.glGetShaderiv(shaderId, GL4.GL_COMPILE_STATUS, status, 0);
-            if (status[0] == GL4.GL_FALSE) {
-                // Get the length of the info log
-                int[] length = new int[1];
-                gl.glGetShaderiv(shaderId, GL4.GL_INFO_LOG_LENGTH, length, 0);
-
-                // Allocate buffer for the info log
-                byte[] infoLog = new byte[length[0]];
-                gl.glGetShaderInfoLog(shaderId, length[0], length, 0, infoLog, 0);
-
-                String errorMessage = new String(infoLog);
-                System.err.println("Shader compilation error: " + errorMessage);
-                gl.glDeleteShader(shaderId);
-                return 0;
-            }
-
-            return shaderId;
-        } catch (IOException e) {
-            System.err.println("Failed to read shader file: " + resourcePath);
-            gl.glDeleteShader(shaderId);
-            return 0;
-        }
-    }
-
-    private void checkLinking(GL4 gl, int program) {
-        int[] linked = new int[1];
-        gl.glGetProgramiv(program, GL4.GL_LINK_STATUS, linked, 0);
-        if (linked[0] == 0) {
-            int[] logLength = new int[1];
-            gl.glGetProgramiv(program, GL4.GL_INFO_LOG_LENGTH, logLength, 0);
-            byte[] log = new byte[logLength[0]];
-            gl.glGetProgramInfoLog(program, logLength[0], null, 0, log, 0);
-
-            String errorMessage = new String(log);
-            System.err.println("Linking failed: " + errorMessage);
-        }
-    }
-
     public void initOpenGL(GL4 gl) {
 
         gl.glEnable(GL4.GL_DEBUG_OUTPUT);
@@ -197,46 +89,23 @@ public class Renderer {
         gl.glEnable(GL4.GL_BLEND);
         gl.glBlendFunc(GL4.GL_SRC_ALPHA, GL4.GL_ONE_MINUS_SRC_ALPHA);
 
-        int computeShader = compileShader(gl, "boidShader.comp", GL4.GL_COMPUTE_SHADER);
-        int vertexShader = compileShader(gl, "boidShader.vert", GL4.GL_VERTEX_SHADER);
-        int fragmentShader = compileShader(gl, "boidShader.frag", GL4.GL_FRAGMENT_SHADER);
+        int computeShader = shaderController.compileShader(gl, "boidShader.comp", GL4.GL_COMPUTE_SHADER);
+        int vertexShader = shaderController.compileShader(gl, "boidShader.vert", GL4.GL_VERTEX_SHADER);
+        int fragmentShader = shaderController.compileShader(gl, "boidShader.frag", GL4.GL_FRAGMENT_SHADER);
+        int windVertexShader = shaderController.compileShader(gl, "windShader.vert", GL4.GL_VERTEX_SHADER);
+        int windFragmentShader = shaderController.compileShader(gl, "windShader.frag", GL4.GL_FRAGMENT_SHADER);
 
-        int windVertexShader = compileShader(gl, "windShader.vert", GL4.GL_VERTEX_SHADER);
-        int windFragmentShader = compileShader(gl, "windShader.frag", GL4.GL_FRAGMENT_SHADER);
+        int computeProgram = shaderController.createComputeProgram(gl, List.of(computeShader));
+        simulation.setComputeProgram(computeProgram);
 
-// create compute shader program
-        int computeProgram = gl.glCreateProgram();
-        simulation.setShaderProgram(computeProgram);
-        gl.glAttachShader(computeProgram, computeShader);
-        gl.glLinkProgram(computeProgram);
-        checkLinking(gl, computeProgram);
-
-// create render shader program
-        int renderProgram = gl.glCreateProgram();
+        int renderProgram = shaderController.createRenderProgram(gl, List.of(vertexShader, fragmentShader));
         simulation.setRenderProgram(renderProgram);
-        gl.glAttachShader(renderProgram, vertexShader);
-        gl.glAttachShader(renderProgram, fragmentShader);
-        gl.glLinkProgram(renderProgram);
-        checkLinking(gl, renderProgram);
 
-// create wind shader program
-        int windProgram = gl.glCreateProgram();
+        int windProgram = shaderController.createRenderProgram(gl, List.of(windVertexShader, windFragmentShader));
         wind.setRenderProgram(windProgram);
-        gl.glAttachShader(windProgram, windVertexShader);
-        gl.glAttachShader(windProgram, windFragmentShader);
-        gl.glLinkProgram(windProgram);
-        checkLinking(gl, windProgram);
 
-        // Clean up shader
-        gl.glDeleteShader(computeShader);
-        gl.glDeleteShader(vertexShader);
-        gl.glDeleteShader(fragmentShader);
-
-        gl.glDeleteShader(windVertexShader);
-        gl.glDeleteShader(windFragmentShader);
-
+        shaderController.deleteShaders(gl, List.of(vertexShader, fragmentShader, windVertexShader, windFragmentShader, computeShader));
         initSsbo(gl);
-        System.out.println("Ssbo size: " + simulation.getSsbo().length);
 
         int[] vaoArray = new int[1];
         gl.glGenVertexArrays(1, vaoArray, 0);
@@ -262,7 +131,7 @@ public class Renderer {
 
         // Set initial uniform values
         gl.glUseProgram(renderProgram);
-        updateLightningUniforms(gl);
+        shaderController.updateLightningUniforms(gl);
 
         int[] windVaoArray = new int[1];
         gl.glGenVertexArrays(1, windVaoArray, 0);
@@ -278,9 +147,8 @@ public class Renderer {
         gl.glEnableVertexAttribArray(0);
         gl.glVertexAttribPointer(0, 3, GL4.GL_FLOAT, false, 0, 0);
 
-
-        gl.glUseProgram(simulation.getShaderProgram());
-        updateUniforms(gl);
+        gl.glUseProgram(simulation.getComputeProgram());
+        shaderController.updateUniforms(gl);
 
         startWindUpdateThread();
     }
@@ -293,11 +161,11 @@ public class Renderer {
         applyWindData(gl);
 
         gl.glUseProgram(simulation.getRenderProgram());
-        updateLightningUniforms(gl);
+        shaderController.updateLightningUniforms(gl);
 
-        gl.glUseProgram(simulation.getShaderProgram());
-        gl.glUniform1f(gl.glGetUniformLocation(simulation.getShaderProgram(), "deltaTime"), deltaTime);
-        updateUniforms(gl);
+        gl.glUseProgram(simulation.getComputeProgram());
+        gl.glUniform1f(gl.glGetUniformLocation(simulation.getComputeProgram(), "deltaTime"), deltaTime);
+        shaderController.updateUniforms(gl);
 
         //dispatch compute shader
         gl.glDispatchCompute((simulation.getNUMBER_OF_BOIDS() + 255) / 256, 1, 1);
@@ -317,13 +185,9 @@ public class Renderer {
         gl.glUseProgram(wind.getRenderProgram());
         gl.glBindVertexArray(wind.getVao());
         gl.glDrawArrays(GL4.GL_LINES, 0, wind.getVertices().length / 3);
-
     }
 
     public void cleanup(GL4 gl) {
-        gl.glDeleteProgram(simulation.getShaderProgram());
-        gl.glDeleteProgram(simulation.getRenderProgram());
-        gl.glDeleteBuffers(1, simulation.getSsbo(), 0);
-        gl.glDeleteVertexArrays(1, IntBuffer.wrap(new int[]{simulation.getVao()}).array(), 0);
+        shaderController.cleanup(gl);
     }
 }
