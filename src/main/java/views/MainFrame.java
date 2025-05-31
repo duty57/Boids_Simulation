@@ -4,6 +4,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.awt.GLCanvas;
 
 import com.jogamp.opengl.util.FPSAnimator;
+import controllers.MouseController;
 import controllers.SimulationController;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,14 +17,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 
 @Getter
 @Setter
 public class MainFrame extends JFrame {
 
     private GLCanvas canvas;
-    private Simulation simulation;
-    private SimulationController simulationController;
+    private final Simulation simulation;
+    private final SimulationController simulationController;
+    private final MouseController mouseController;
     private SimulationCard selectedCard;
     DefaultListModel<SimulationCard> historyListModel;
     JPanel simulationPanel;
@@ -34,8 +37,9 @@ public class MainFrame extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
-        this.simulationController = simulationController;
-        this.simulation = simulation;
+        this.simulationController = Objects.requireNonNull(simulationController);
+        this.simulation = Objects.requireNonNull(simulation);
+        mouseController = MouseController.getInstance(this.simulation);
         historyListModel = new DefaultListModel<>();
         simulationController.loadSimulations(historyListModel);
     }
@@ -71,7 +75,7 @@ public class MainFrame extends JFrame {
 
         setVisible(true);
         animator.start();
-        simulationController.setupMouseListeners(canvas);
+        mouseController.setupMouseListeners(canvas);
     }
 
     private JPanel createSettingsPanel() {

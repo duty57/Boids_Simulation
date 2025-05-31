@@ -15,7 +15,7 @@ import org.apache.commons.lang3.ObjectUtils;
 public class Simulation {
     private static Simulation instance;
 
-    private int shaderProgram;
+    private int computeProgram;
     private int renderProgram;
     private int[] ssbo = new int[1];
     private int vao;

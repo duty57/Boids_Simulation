@@ -1,8 +1,6 @@
 package controllers;
 
 import clients.WeatherAPIClient;
-import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.awt.GLCanvas;
 import models.SimModel;
 import models.Simulation;
 import models.SimulationCard;
@@ -13,13 +11,9 @@ import services.SimulationService;
 import javax.swing.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.FloatBuffer;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
@@ -40,25 +34,6 @@ public class SimulationController {
             instance = new SimulationController(simulation);
         }
         return instance;
-    }
-
-    public void updateMousePosition(GL4 gl, float x, float y) {
-        simulation.setMousePosition(new float[]{x, y});
-
-        gl.glUseProgram(simulation.getShaderProgram());
-        gl.glUniform2fv(gl.glGetUniformLocation(simulation.getShaderProgram(), "mousePosition"), 1, FloatBuffer.wrap(simulation.getMousePosition()));
-    }
-
-    public void setMoveTowardsMouse(GL4 gl, int value) {
-        simulation.setMoveTowardsMouse(value);
-        gl.glUseProgram(simulation.getShaderProgram());
-        gl.glUniform1i(gl.glGetUniformLocation(simulation.getShaderProgram(), "moveTowardsMouse"), value);
-    }
-
-    public void setMoveAwayFromMouse(GL4 gl, int value) {
-        simulation.setMoveAwayFromMouse(value);
-        gl.glUseProgram(simulation.getShaderProgram());
-        gl.glUniform1i(gl.glGetUniformLocation(simulation.getShaderProgram(), "moveAwayFromMouse"), value);
     }
 
     public SimModel saveSimulation(DefaultListModel<SimulationCard> historyListModel) {
@@ -252,64 +227,5 @@ public class SimulationController {
                 }
             }
         }.execute();
-    }
-
-    public void setupMouseListeners(GLCanvas canvas) {
-        canvas.addMouseMotionListener(new MouseMotionListener() {
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                mouseMoved(e);
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                float x = (2.0f * e.getX()) / canvas.getWidth() - 1.0f;
-                float y = 1.0f - (2.0f * e.getY()) / canvas.getHeight();
-
-                GL4 gl = canvas.getGL().getGL4();
-                updateMousePosition(gl, x, y);
-            }
-        });
-
-        canvas.addMouseListener(new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                System.out.println("mousePressed");
-                GL4 gl = canvas.getGL().getGL4();
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    setMoveTowardsMouse(gl, 1);
-                } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    setMoveAwayFromMouse(gl, 1);
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                System.out.println("mouseReleased");
-                GL4 gl = canvas.getGL().getGL4();
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    setMoveTowardsMouse(gl, 0);
-                } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    setMoveAwayFromMouse(gl, 0);
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
     }
 }
