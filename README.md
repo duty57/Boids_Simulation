@@ -76,7 +76,7 @@ A Swing‐based GUI overlays the OpenGL canvas, providing sliders for tuning boi
 2. **Verify the Graddle Wrapper**
    ```bash
    ./gradlew clean
-   ./gradlew build![Simulation_Tab](https://github.com/user-attachments/assets/11c80a12-be84-4ee8-bfca-f1fd38a63794)
+   ./gradlew build
 
 ### Configuration (OpenWeather API Key)
 1. **Obtain Your API Key**
