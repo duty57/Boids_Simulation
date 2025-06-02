@@ -67,16 +67,38 @@ A Swing‐based GUI overlays the OpenGL canvas, providing sliders for tuning boi
   - All JOGL, SQLite, and third‐party dependencies are managed via Gradle.
  
 ## Getting Started
-### Clone & Build
+### Clone & Build in IntelliJ IDEA
 
 1. **Clone the repository**  
-   ```bash
-   git clone https://github.com/duty57/Boids_Simulation.git
-   cd Boids_Simulation
-2. **Verify the Graddle Wrapper**
-   ```bash
-   ./gradlew clean
-   ./gradlew build
+   - Open IntelliJ IDEA.  
+   - From the Welcome screen, click **Get from VCS**.  
+   - Enter the repository URL:  
+     ```
+     https://github.com/duty57/Boids_Simulation.git
+     ```  
+   - Choose a local directory for cloning and click **Clone**.
+
+2. **Import as a Gradle project**  
+   - After the clone completes, IntelliJ should detect the `build.gradle` file and prompt you to import the Gradle project.  
+   - If it does not prompt automatically, go to **File → New → Project from Existing Sources…**, select the project root, and choose **Import project from external model → Gradle**.  
+   - Click **Finish**.
+
+3. **Set the Java SDK to 17 or higher**  
+   - In IntelliJ, navigate to **File → Project Structure…** (or press `Ctrl+Alt+Shift+S`).  
+   - Under **Project SDK**, ensure you have **Java 17+** selected. If not, click **New…**, point to your JDK 17+ installation, and select it.  
+   - Under **Project language level**, choose **17 – Sealed types, pattern matching, etc.** (or higher).  
+   - Click **Apply → OK**.
+
+4. **Sync and build with Gradle**  
+   - IntelliJ will automatically sync the Gradle project. If it does not, click the **Reload All Gradle Projects** button in the Gradle tool window (usually on the right side).  
+   - To build the project, you can:  
+     - Use the Gradle tool window, expand **Tasks → build**, and double-click **build**.  
+     - Or run **Build → Build Project** from the main menu.  
+
+---
+
+> [!NOTE]
+> Make sure your local JDK installation is version **17 or higher** before running or building the project.  
 
 ### Configuration (OpenWeather API Key)
 1. **Obtain Your API Key**
